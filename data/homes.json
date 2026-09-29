@@ -1,0 +1,7 @@
+{
+  "homes": [
+    { "id": "home-1", "model": "[Model Name]", "manufacturer": "[Manufacturer 1]", "type": "Double-wide", "status": "On our lot", "show": true, "featured": true, "beds": 3, "baths": 2, "sqft": "[0,000]", "price": "[$00,000]", "description": "[Short description of this home: layout, standout features, upgrades.]", "photos": [], "floorplan": "", "tour_url": "" },
+    { "id": "home-2", "model": "[Model Name]", "manufacturer": "[Manufacturer 2]", "type": "Single-wide", "status": "On our lot", "show": true, "featured": true, "beds": 2, "baths": 1, "sqft": "[000]", "price": "[$00,000]", "description": "[Short description of this home.]", "photos": [], "floorplan": "", "tour_url": "" },
+    { "id": "home-3", "model": "[Model Name]", "manufacturer": "[Manufacturer 3]", "type": "Modular", "status": "Available to order", "show": true, "featured": false, "beds": 4, "baths": 3, "sqft": "[0,000]", "price": "[$000,000]", "description": "[Short description of this home.]", "photos": [], "floorplan": "", "tour_url": "" }
+  ]
+}
