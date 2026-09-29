@@ -1,30 +1,30 @@
 # Decap CMS settings. The only lines you must change are under "backend".
 backend:
   name: github
-  repo: jacobwjr/newdayhomes-website   # <- change this
+  repo: YOUR-GITHUB-USERNAME/YOUR-REPO-NAME   # <- change this
   branch: main
 
 # Where uploaded photos and floor plans are saved
 media_folder: "images/uploads"
 public_folder: "/images/uploads"
 
-site_url: https://www.newdayhomes.co
-display_url: https://www.newdayhomes.co
+site_url: https://www.YOUR-DOMAIN.com
+display_url: https://www.YOUR-DOMAIN.com
 locale: en
 
 collections:
   - name: inventory
-    label: Home Listings
+    label: Floor Plans
     editor: { preview: false }
     files:
       - name: homes
-        label: All Homes
+        label: All Floor Plans
         file: data/homes.json
         format: json
         fields:
           - name: homes
-            label: Homes
-            label_singular: Home
+            label: Floor plans
+            label_singular: Floor plan
             widget: list
             summary: "{{fields.model}} ({{fields.type}}) · {{fields.status}}"
             collapsed: true
@@ -33,14 +33,14 @@ collections:
               - { name: model, label: Model name, widget: string }
               - { name: manufacturer, label: Manufacturer, widget: string, required: false }
               - { name: type, label: Home type, widget: select, options: ["Single-wide", "Double-wide", "Modular"] }
-              - { name: status, label: Status, widget: select, options: ["On our lot", "Available to order", "Sale pending", "Sold"], default: "On our lot" }
+              - { name: status, label: Status, widget: select, options: ["Customizable floor plan", "Model home on our lot", "Sale pending", "Sold"], default: "Customizable floor plan" }
               - { name: show, label: Show on website, widget: boolean, default: true }
               - { name: featured, label: Feature on homepage, widget: boolean, default: false }
               - { name: beds, label: Bedrooms, widget: number, value_type: int, min: 1 }
               - { name: baths, label: Bathrooms, widget: number, value_type: float, step: 0.5, min: 1 }
               - { name: sqft, label: Square feet, widget: string }
-              - { name: price, label: "Price (e.g. $89,900 or Call for price)", widget: string }
-              - { name: description, label: Description, widget: text, required: false }
+              - { name: price, label: "Starting price (e.g. Starting at $89,900 or Call for pricing)", widget: string }
+              - { name: description, label: "Description (layout highlights and popular customizations)", widget: text, required: false }
               - name: photos
                 label: Photos (first photo is the main one; drag to reorder)
                 label_singular: Photo
@@ -49,3 +49,21 @@ collections:
                 field: { name: image, label: Photo, widget: image, choose_url: false }
               - { name: floorplan, label: "Floor plan (image or PDF)", widget: file, required: false, choose_url: false }
               - { name: tour_url, label: "Video or 3D tour link (YouTube, Matterport, etc.)", widget: string, required: false }
+
+  - name: settings
+    label: Site Settings
+    editor: { preview: false }
+    files:
+      - name: general
+        label: Google reviews
+        file: data/settings.json
+        format: json
+        fields:
+          - name: google_reviews
+            label: Google reviews
+            widget: object
+            fields:
+              - { name: show, label: Show Google reviews on the website, widget: boolean, default: false }
+              - { name: url, label: "Link to your Google reviews (copy it from your Google Business Profile)", widget: string, required: false }
+              - { name: rating, label: "Star rating (e.g. 4.9), optional", widget: string, required: false }
+              - { name: count, label: "Number of reviews (e.g. 37), optional", widget: string, required: false }
