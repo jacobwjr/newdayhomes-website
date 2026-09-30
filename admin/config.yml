@@ -1,15 +1,15 @@
 # Decap CMS settings. The only lines you must change are under "backend".
 backend:
   name: github
-  repo: YOUR-GITHUB-USERNAME/YOUR-REPO-NAME   # <- change this
+  repo: jacobwjr/newdayhomes-website   # <- change this
   branch: main
 
 # Where uploaded photos and floor plans are saved
 media_folder: "images/uploads"
 public_folder: "/images/uploads"
 
-site_url: https://www.YOUR-DOMAIN.com
-display_url: https://www.YOUR-DOMAIN.com
+site_url: https://www.newdayhomes.co
+display_url: https://www.newdayhomes.co
 locale: en
 
 collections:
