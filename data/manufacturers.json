@@ -3,23 +3,13 @@
   "title": "Homes built by",
   "manufacturers": [
     {
-      "name": "[Manufacturer 1]",
-      "logo": "",
+      "name": "Clayton Homes",
+      "logo": "/images/uploads/images.jpeg",
       "url": ""
     },
     {
-      "name": "[Manufacturer 2]",
-      "logo": "",
-      "url": ""
-    },
-    {
-      "name": "[Manufacturer 3]",
-      "logo": "",
-      "url": ""
-    },
-    {
-      "name": "[Manufacturer 4]",
-      "logo": "",
+      "name": "Cavco",
+      "logo": "/images/uploads/images.png",
       "url": ""
     }
   ]
