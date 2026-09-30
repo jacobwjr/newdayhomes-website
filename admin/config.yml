@@ -1,15 +1,15 @@
 # Decap CMS settings. The only lines you must change are under "backend".
 backend:
   name: github
-  repo: jacobwjr/newdayhomes-website   # <- change this
+  repo: YOUR-GITHUB-USERNAME/YOUR-REPO-NAME   # <- change this
   branch: main
 
 # Where uploaded photos and floor plans are saved
 media_folder: "images/uploads"
 public_folder: "/images/uploads"
 
-site_url: https://www.newdayhomes.co
-display_url: https://www.newdayhomes.co
+site_url: https://www.YOUR-DOMAIN.com
+display_url: https://www.YOUR-DOMAIN.com
 locale: en
 
 collections:
@@ -67,3 +67,19 @@ collections:
               - { name: url, label: "Link to your Google reviews (copy it from your Google Business Profile)", widget: string, required: false }
               - { name: rating, label: "Star rating (e.g. 4.9), optional", widget: string, required: false }
               - { name: count, label: "Number of reviews (e.g. 37), optional", widget: string, required: false }
+      - name: manufacturers
+        label: Manufacturers ("Homes built by")
+        file: data/manufacturers.json
+        format: json
+        fields:
+          - { name: show, label: Show this section on the website, widget: boolean, default: true }
+          - { name: title, label: Heading, widget: string, default: "Homes built by" }
+          - name: manufacturers
+            label: Manufacturers
+            label_singular: Manufacturer
+            widget: list
+            summary: "{{fields.name}}"
+            fields:
+              - { name: name, label: Manufacturer name, widget: string }
+              - { name: logo, label: "Logo (optional; PNG or SVG with transparent background works best)", widget: image, required: false, choose_url: false }
+              - { name: url, label: "Website link (optional)", widget: string, required: false }
