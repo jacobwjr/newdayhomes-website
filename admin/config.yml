@@ -1,15 +1,15 @@
 # Decap CMS settings. The only lines you must change are under "backend".
 backend:
   name: github
-  repo: jacobwjr/newdayhomes-website   # <- change this
+  repo: YOUR-GITHUB-USERNAME/YOUR-REPO-NAME   # <- change this
   branch: main
 
 # Where uploaded photos and floor plans are saved
 media_folder: "images/uploads"
 public_folder: "/images/uploads"
 
-site_url: https://www.newdayhomes.co
-display_url: https://www.newdayhomes.co
+site_url: https://www.YOUR-DOMAIN.com
+display_url: https://www.YOUR-DOMAIN.com
 locale: en
 
 collections:
@@ -83,3 +83,12 @@ collections:
               - { name: name, label: Manufacturer name, widget: string }
               - { name: logo, label: "Logo (optional; PNG or SVG with transparent background works best)", widget: image, required: false, choose_url: false }
               - { name: url, label: "Website link (optional)", widget: string, required: false }
+      - name: hero
+        label: Top of page (photo or video)
+        file: data/hero.json
+        format: json
+        fields:
+          - { name: video, label: "Video (MP4, muted loop of home interiors; 15-30 seconds, under 10 MB works best)", widget: file, required: false, choose_url: false, media_library: { config: { multiple: false } } }
+          - { name: poster, label: "Still image shown while the video loads (optional; a frame from the video works well)", widget: image, required: false, choose_url: false }
+          - { name: image, label: "Photo (used if there's no video)", widget: image, required: false, choose_url: false }
+          - { name: alt, label: "Short description for screen readers (e.g. Tour of a custom kitchen and living room)", widget: string, required: false }
