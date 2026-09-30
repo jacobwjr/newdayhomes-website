@@ -8,18 +8,8 @@
       "url": ""
     },
     {
-      "name": "[Manufacturer 2]",
-      "logo": "",
-      "url": ""
-    },
-    {
-      "name": "[Manufacturer 3]",
-      "logo": "",
-      "url": ""
-    },
-    {
-      "name": "[Manufacturer 4]",
-      "logo": "",
+      "name": "Cavco",
+      "logo": "/images/uploads/images.png",
       "url": ""
     }
   ]
