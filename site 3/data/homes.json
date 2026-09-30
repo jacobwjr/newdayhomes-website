@@ -1,0 +1,55 @@
+{
+  "homes": [
+    {
+      "id": "home-1",
+      "model": "[Model Name]",
+      "manufacturer": "[Manufacturer 1]",
+      "type": "Double-wide",
+      "status": "Customizable floor plan",
+      "show": true,
+      "featured": true,
+      "beds": 3,
+      "baths": 2,
+      "sqft": "[0,000]",
+      "price": "[Starting at $00,000]",
+      "description": "[Describe the layout and popular customizations for this plan, e.g. add a porch, island kitchen, tile shower.]",
+      "photos": [],
+      "floorplan": "",
+      "tour_url": ""
+    },
+    {
+      "id": "home-2",
+      "model": "[Model Name]",
+      "manufacturer": "[Manufacturer 2]",
+      "type": "Single-wide",
+      "status": "Customizable floor plan",
+      "show": true,
+      "featured": true,
+      "beds": 2,
+      "baths": 1,
+      "sqft": "[000]",
+      "price": "[Starting at $00,000]",
+      "description": "[Describe the layout and popular customizations for this plan, e.g. add a porch, island kitchen, tile shower.]",
+      "photos": [],
+      "floorplan": "",
+      "tour_url": ""
+    },
+    {
+      "id": "home-3",
+      "model": "[Model Name]",
+      "manufacturer": "[Manufacturer 3]",
+      "type": "Modular",
+      "status": "Model home on our lot",
+      "show": true,
+      "featured": false,
+      "beds": 4,
+      "baths": 3,
+      "sqft": "[0,000]",
+      "price": "[Starting at $000,000]",
+      "description": "[Describe the layout and popular customizations for this plan, e.g. add a porch, island kitchen, tile shower.]",
+      "photos": [],
+      "floorplan": "",
+      "tour_url": ""
+    }
+  ]
+}
