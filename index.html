@@ -294,7 +294,7 @@ a.maker:hover{border-color:var(--brand);color:var(--brand)}
 .tour-chip{display:inline-flex;align-self:flex-start;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--brand);background:#E8EDF5;border-radius:999px;padding:4px 10px}
 .tour-frame{position:relative;aspect-ratio:16/10;border-radius:12px;overflow:hidden;background:#0F1E3A}
 .tour-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-@media (max-width:620px){.tour-frame{aspect-ratio:4/5}}
+
 
 .hero-slide{position:absolute;inset:0;margin:0;opacity:0;transition:opacity .9s ease}
 .hero-slide.active{opacity:1;z-index:1}
@@ -336,6 +336,21 @@ a.maker:hover{border-color:var(--brand);color:var(--brand)}
 .hero-slide:hover img{transform:scale(1.02)}
 .hero-slide img{transition:transform .6s ease}
 @media (prefers-reduced-motion:reduce){.card.home,.card.home .home-media img,.hero-slide img{transition:none}.card.home:hover{transform:none}.card.home:hover .home-media img,.hero-slide:hover img{transform:none}}
+
+/* Detail view scrolling (phones) */
+body.dialog-open{overflow:hidden}
+dialog.home-dialog{overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.dlg-head{position:sticky;top:0;z-index:5;background:var(--surface);padding-bottom:12px;border-bottom:1px solid transparent}
+.tour-cover{position:absolute;inset:0;background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center}
+.tour-cover::before{content:"";position:absolute;inset:0;background:rgba(10,26,51,.45)}
+.tour-start{position:relative;z-index:1}
+@media (max-width:760px){
+  dialog.home-dialog{height:100vh;height:100dvh;max-height:100vh;max-height:100dvh}
+  .dlg-head{border-bottom-color:var(--line)}
+  .tour-frame{aspect-ratio:16/10}
+}
+.dlg-body>*{min-width:0}
+@media (max-width:760px){.dlg-body{grid-template-columns:minmax(0,1fr)}}
 </style>
 </head>
 <body>
@@ -627,7 +642,7 @@ END REVIEWS SECTION -->
   </div>
   <div class="floorplan" id="dlg-3d" hidden>
     <h3>3D walkthrough</h3>
-    <p class="fineprint" style="margin:0 0 12px">Click and drag to look around, or tap the circles on the floor to walk through the home.</p>
+    <p class="fineprint" id="dlg-3d-hint" style="margin:0 0 12px"></p>
     <div class="tour-frame" id="dlg-3d-frame"></div>
   </div>
   <div class="floorplan" id="dlg-floorplan" hidden>
@@ -752,16 +767,31 @@ function openHome(id){
   const t3 = document.getElementById('dlg-3d'), t3f = document.getElementById('dlg-3d-frame');
   if (isMatterport(tu)) {
     tour.textContent = 'Open 3D tour full screen';
-    t3f.innerHTML = `<iframe src="${esc(tu)}" title="3D walkthrough of ${esc(h.model)}" allow="fullscreen; xr-spatial-tracking" allowfullscreen loading="lazy"></iframe>`;
+    const cover = safeUrl(photosOf(h)[0]) || sampleFor(h);
+    const small = window.matchMedia('(max-width: 760px)').matches;
+    // A tap-to-start cover keeps the page scrollable; phones open the tour full screen
+    t3f.innerHTML = `<div class="tour-cover" style="background-image:url('${esc(cover)}')">
+        ${small
+          ? `<a class="btn btn-accent tour-start" href="${esc(tu)}" target="_blank" rel="noopener">Start 3D tour</a>`
+          : `<button type="button" class="btn btn-accent tour-start">Start 3D tour</button>`}
+      </div>`;
+    const startBtn = t3f.querySelector('button.tour-start');
+    if (startBtn) startBtn.addEventListener('click', () => {
+      t3f.innerHTML = `<iframe src="${esc(tu)}" title="3D walkthrough of ${esc(h.model)}" allow="fullscreen; xr-spatial-tracking" allowfullscreen></iframe>`;
+    });
+    document.getElementById('dlg-3d-hint').textContent = small
+      ? 'Opens the walkthrough full screen. Close it to come back here.'
+      : 'Click and drag to look around, or click the circles on the floor to walk through the home.';
     t3.hidden = false;
   } else { tour.textContent = 'Watch the tour'; t3.hidden = true; t3f.innerHTML = ''; }
 
   history.replaceState(null, '', '#home-' + encodeURIComponent(h.id));
+  document.body.classList.add('dialog-open');
   if (!dlg.open) dlg.showModal();
   dlg.scrollTop = 0;
 }
 function closeHome(){ if (dlg.open) dlg.close(); }
-dlg.addEventListener('close', () => { document.getElementById('dlg-3d-frame').innerHTML = ''; history.replaceState(null, '', '#homes'); });
+dlg.addEventListener('close', () => { document.body.classList.remove('dialog-open'); document.getElementById('dlg-3d-frame').innerHTML = ''; history.replaceState(null, '', '#homes'); });
 document.getElementById('dlg-close').addEventListener('click', closeHome);
 document.getElementById('dlg-ask').addEventListener('click', () => {
   const t = document.getElementById('dlg-title').textContent;
