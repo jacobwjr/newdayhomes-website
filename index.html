@@ -295,6 +295,33 @@ a.maker:hover{border-color:var(--brand);color:var(--brand)}
 .tour-frame{position:relative;aspect-ratio:16/10;border-radius:12px;overflow:hidden;background:#0F1E3A}
 .tour-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 @media (max-width:620px){.tour-frame{aspect-ratio:4/5}}
+
+.hero-slide{position:absolute;inset:0;margin:0;opacity:0;transition:opacity .9s ease}
+.hero-slide.active{opacity:1;z-index:1}
+.hero-slide img{width:100%;height:100%;object-fit:cover;display:block}
+.slide-cap{position:absolute;left:0;right:0;bottom:0;padding:56px 76px 18px 20px;background:linear-gradient(to top,rgba(10,26,51,.88),rgba(10,26,51,.55) 55%,rgba(10,26,51,0));color:#fff;display:flex;flex-direction:column;gap:2px}
+.slide-cap strong{font-family:var(--display);font-size:24px;font-weight:600;line-height:1.2}
+.slide-cap span{font-size:14px;color:#E6EBF3}
+.slide-cap .slide-type{font-size:12px;font-weight:700;color:var(--gold);letter-spacing:.02em}
+.slide-link{align-self:flex-start;margin-top:8px;min-height:40px;padding:0 16px;border-radius:8px;border:0;background:var(--gold);color:var(--brand-dark);font:600 14px/1 var(--body);cursor:pointer}
+.slide-link:hover{background:#D9A800}
+.slide-arrow{position:absolute;top:42%;transform:translateY(-50%);z-index:2;width:44px;height:44px;border-radius:50%;border:0;background:rgba(10,26,51,.55);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;opacity:.85}
+.slide-arrow:hover{opacity:1;background:rgba(10,26,51,.8)}
+.slide-arrow.prev{left:12px}.slide-arrow.next{right:12px}
+.slide-dots{position:absolute;top:14px;right:14px;z-index:2;display:flex;gap:2px;background:rgba(10,26,51,.45);border-radius:999px;padding:2px 6px}
+.slide-dots button{width:22px;height:28px;border:0;background:transparent;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0}
+.slide-dots button::before{content:"";width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.55)}
+.slide-dots button[aria-current="true"]::before{background:#fff;width:10px;height:10px}
+.hero-media .hero-pause{z-index:3}
+@media (prefers-reduced-motion:reduce){.hero-slide{transition:none}}
+@media (max-width:620px){
+  .slide-cap{padding:28px 64px 12px 16px;flex-direction:row;flex-wrap:wrap;align-items:center;column-gap:10px}
+  .slide-cap .slide-type,.slide-cap>span:not(.slide-type){display:none}
+  .slide-cap strong{font-size:18px;flex:1 1 auto}
+  .slide-link{margin-top:0;min-height:40px;padding:0 12px;font-size:13px}
+  .slide-arrow{top:40%;width:40px;height:40px}
+  .slide-dots{top:10px;right:10px}
+}
 </style>
 </head>
 <body>
@@ -771,7 +798,7 @@ nav.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
 }));
 
 document.getElementById('year').textContent = new Date().getFullYear();
-loadHomes();
+const homesReady = loadHomes();
 
 /* Site settings (edited in the admin page under Site Settings) */
 async function loadSettings(){
@@ -815,16 +842,22 @@ loadMakers();
 
 /* Top-of-page photo or video (Site Settings > Top of page) */
 async function loadHero(){
-  let cfg;
-  try { const r = await fetch('data/hero.json', { cache:'no-store' }); if (!r.ok) return; cfg = await r.json(); } catch (e) { return; }
+  let cfg = {};
+  try { const r = await fetch('data/hero.json', { cache:'no-store' }); if (r.ok) cfg = await r.json(); } catch (e) {}
+  const mode = cfg.mode || 'slideshow';
   const img = document.getElementById('hero-img');
   const photo = safeUrl(cfg.image), poster = safeUrl(cfg.poster) || photo;
-  if (photo) img.src = photo;
   if (cfg.alt) img.alt = cfg.alt;
-  const src = safeUrl(cfg.video);
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const saveData = navigator.connection && navigator.connection.saveData;
-  if (!src || reduce || saveData) { if (poster && !photo) img.src = poster; return; }
+
+  if (mode === 'slideshow') {
+    await homesReady;
+    if (startSlideshow(Number(cfg.slide_seconds) || 5, reduce)) return;
+  }
+  if (photo) img.src = photo;
+  const src = safeUrl(cfg.video);
+  if (mode !== 'video' || !src || reduce || saveData) { if (poster && !photo) img.src = poster; return; }
   const v = document.createElement('video');
   Object.assign(v, { src, muted:true, loop:true, autoplay:true, playsInline:true, preload:'auto' });
   v.setAttribute('muted',''); v.setAttribute('playsinline','');
@@ -838,10 +871,94 @@ async function loadHero(){
   btn.addEventListener('click', () => {
     const paused = v.paused;
     paused ? v.play() : v.pause();
-    btn.setAttribute('aria-label', paused ? 'Pause video' : 'Play video');
-    document.getElementById('hp-pause').hidden = !paused;
-    document.getElementById('hp-play').hidden = paused;
+    setPauseIcon(!paused, 'video');
   });
+}
+function setPauseIcon(isPaused, what){
+  const btn = document.getElementById('hero-pause');
+  btn.setAttribute('aria-label', (isPaused ? 'Play ' : 'Pause ') + what);
+  document.getElementById('hp-pause').hidden = isPaused;
+  document.getElementById('hp-play').hidden = !isPaused;
+}
+
+/* Slideshow of homes: uses each listing's first real photo.
+   If any homes are marked "Show in top-of-page slideshow" in the admin, only those are used. */
+function startSlideshow(seconds, reduce){
+  const withPhoto = HOMES.map(h => ({ h, src: safeUrl(photosOf(h)[0]) })).filter(x => x.src);
+  const featured = withPhoto.filter(x => x.h.featured);
+  const items = (featured.length ? featured : withPhoto).slice(0, 10);
+  if (!items.length) return false;
+
+  const media = document.getElementById('hero-media');
+  const btn = document.getElementById('hero-pause');
+  media.classList.add('is-slideshow');
+  media.setAttribute('role', 'region');
+  media.setAttribute('aria-roledescription', 'carousel');
+  media.setAttribute('aria-label', 'Homes we offer');
+
+  const slides = items.map(({ h, src }, i) => {
+    const el = document.createElement('figure');
+    el.className = 'hero-slide';
+    el.setAttribute('role', 'group');
+    el.setAttribute('aria-roledescription', 'slide');
+    el.setAttribute('aria-label', `${i + 1} of ${items.length}: ${h.model}`);
+    el.innerHTML = `<img src="${esc(src)}" alt="${esc(h.model)} exterior" ${i ? 'loading="lazy"' : ''}>
+      <figcaption class="slide-cap">
+        <span class="slide-type">${esc(h.type)}${h.manufacturer ? ' · ' + esc(h.manufacturer) : ''}</span>
+        <strong>${esc(h.model)}</strong>
+        <span>${esc(specLine(h))}</span>
+        <button type="button" class="slide-link">View this home</button>
+      </figcaption>`;
+    el.querySelector('.slide-link').addEventListener('click', () => openHome(h.id));
+    media.insertBefore(el, btn);
+    return el;
+  });
+
+  let dots = [];
+  if (items.length > 1) {
+    const prev = document.createElement('button'), next = document.createElement('button');
+    prev.className = 'slide-arrow prev'; next.className = 'slide-arrow next';
+    prev.type = next.type = 'button';
+    prev.setAttribute('aria-label', 'Previous home'); next.setAttribute('aria-label', 'Next home');
+    prev.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>';
+    next.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
+    const dotWrap = document.createElement('div');
+    dotWrap.className = 'slide-dots';
+    dots = items.map((x, i) => {
+      const d = document.createElement('button');
+      d.type = 'button'; d.setAttribute('aria-label', `Show ${x.h.model}`);
+      d.addEventListener('click', () => { go(i); restart(); });
+      dotWrap.appendChild(d); return d;
+    });
+    prev.addEventListener('click', () => { go(cur - 1); restart(); });
+    next.addEventListener('click', () => { go(cur + 1); restart(); });
+    media.append(prev, next, dotWrap);
+  }
+  document.getElementById('hero-img').hidden = true;
+
+  let cur = 0, timer = null, paused = reduce || items.length < 2, hover = false;
+  function go(i){
+    cur = (i + slides.length) % slides.length;
+    slides.forEach((s, j) => { s.classList.toggle('active', j === cur); s.setAttribute('aria-hidden', String(j !== cur)); s.inert = j !== cur; });
+    dots.forEach((d, j) => d.setAttribute('aria-current', String(j === cur)));
+  }
+  function restart(){ clearInterval(timer); if (!paused && !hover && !document.hidden) timer = setInterval(() => go(cur + 1), seconds * 1000); }
+  go(0);
+  if (items.length > 1) {
+    btn.hidden = false;
+    setPauseIcon(paused, 'slideshow');
+    btn.addEventListener('click', () => { paused = !paused; setPauseIcon(paused, 'slideshow'); restart(); });
+    media.addEventListener('mouseenter', () => { hover = true; restart(); });
+    media.addEventListener('mouseleave', () => { hover = false; restart(); });
+    media.addEventListener('focusin', () => { hover = true; restart(); });
+    media.addEventListener('focusout', () => { hover = false; restart(); });
+    document.addEventListener('visibilitychange', restart);
+    let x0 = null;
+    media.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; }, { passive:true });
+    media.addEventListener('touchend', e => { if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0; if (Math.abs(dx) > 40) { go(cur + (dx < 0 ? 1 : -1)); restart(); } x0 = null; });
+    restart();
+  }
+  return true;
 }
 loadHero();
 </script>
