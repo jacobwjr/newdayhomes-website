@@ -1,7 +1,7 @@
 # Decap CMS settings. The only lines you must change are under "backend".
 backend:
   name: github
-  repo: YOUR-GITHUB-USERNAME/YOUR-REPO-NAME   # <- change this
+  repo: jacobwjr/newdayhomes-website  # <- change this
   branch: main
 
 # Where uploaded photos and floor plans are saved
