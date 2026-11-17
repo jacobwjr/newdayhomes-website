@@ -1,15 +1,15 @@
 # Decap CMS settings. The only lines you must change are under "backend".
 backend:
   name: github
-  repo: jacobwjr/newdayhomes-website   # <- change this
+  repo: YOUR-GITHUB-USERNAME/YOUR-REPO-NAME   # <- change this
   branch: main
 
 # Where uploaded photos and floor plans are saved
 media_folder: "images/uploads"
 public_folder: "/images/uploads"
 
-site_url: https://www.newdayhomes.co
-display_url: https://www.newdayhomes.co
+site_url: https://www.YOUR-DOMAIN.com
+display_url: https://www.YOUR-DOMAIN.com
 locale: en
 
 collections:
@@ -36,8 +36,9 @@ collections:
               - { name: status, label: Status, widget: select, options: ["Customizable floor plan", "Model home on our lot", "Sale pending", "Sold"], default: "Customizable floor plan" }
               - { name: show, label: Show on website, widget: boolean, default: true }
               - { name: featured, label: Feature on homepage, widget: boolean, default: false }
-              - { name: beds, label: Bedrooms, widget: number, value_type: int, min: 1 }
-              - { name: baths, label: Bathrooms, widget: number, value_type: float, step: 0.5, min: 1 }
+              - { name: size, label: "Size (e.g. 16′ × 56′)", widget: string, required: false }
+              - { name: beds, label: Bedrooms, widget: number, value_type: int, min: 1, required: false }
+              - { name: baths, label: Bathrooms, widget: number, value_type: float, step: 0.5, min: 1, required: false }
               - { name: sqft, label: Square feet, widget: string }
               - { name: price, label: "Starting price (e.g. Starting at $89,900 or Call for pricing)", widget: string }
               - { name: description, label: "Description (layout highlights and popular customizations)", widget: text, required: false }
@@ -48,7 +49,7 @@ collections:
                 required: false
                 field: { name: image, label: Photo, widget: image, choose_url: false }
               - { name: floorplan, label: "Floor plan (image or PDF)", widget: file, required: false, choose_url: false }
-              - { name: tour_url, label: "Video or 3D tour link (YouTube, Matterport, etc.)", widget: string, required: false }
+              - { name: tour_url, label: "3D tour or video link (Matterport links show the 3D tour right on the page)", widget: string, required: false }
 
   - name: settings
     label: Site Settings
