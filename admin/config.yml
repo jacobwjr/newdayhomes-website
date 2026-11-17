@@ -35,7 +35,7 @@ collections:
               - { name: type, label: Home type, widget: select, options: ["Single-wide", "Double-wide", "Modular"] }
               - { name: status, label: Status, widget: select, options: ["Customizable floor plan", "Model home on our lot", "Sale pending", "Sold"], default: "Customizable floor plan" }
               - { name: show, label: Show on website, widget: boolean, default: true }
-              - { name: featured, label: Feature on homepage, widget: boolean, default: false }
+              - { name: featured, label: "Show in the top-of-page slideshow (if none are checked, all homes with photos are used)", widget: boolean, default: false }
               - { name: size, label: "Size (e.g. 16′ × 56′)", widget: string, required: false }
               - { name: beds, label: Bedrooms, widget: number, value_type: int, min: 1, required: false }
               - { name: baths, label: Bathrooms, widget: number, value_type: float, step: 0.5, min: 1, required: false }
@@ -85,10 +85,12 @@ collections:
               - { name: logo, label: "Logo (optional; PNG or SVG with transparent background works best)", widget: image, required: false, choose_url: false }
               - { name: url, label: "Website link (optional)", widget: string, required: false }
       - name: hero
-        label: Top of page (photo or video)
+        label: Top of page (slideshow, video, or photo)
         file: data/hero.json
         format: json
         fields:
+          - { name: mode, label: What to show at the top of the page, widget: select, default: slideshow, options: [{ label: "Slideshow of our homes", value: slideshow }, { label: "Video", value: video }, { label: "Single photo", value: photo }] }
+          - { name: slide_seconds, label: "Seconds per slide (slideshow only)", widget: number, value_type: int, min: 3, max: 15, default: 5, required: false }
           - { name: video, label: "Video (MP4, muted loop of home interiors; 15-30 seconds, under 10 MB works best)", widget: file, required: false, choose_url: false, media_library: { config: { multiple: false } } }
           - { name: poster, label: "Still image shown while the video loads (optional; a frame from the video works well)", widget: image, required: false, choose_url: false }
           - { name: image, label: "Photo (used if there's no video)", widget: image, required: false, choose_url: false }
