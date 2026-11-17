@@ -291,6 +291,10 @@ a.maker:hover{border-color:var(--brand);color:var(--brand)}
   .mobile-bar .btn{flex:1;min-height:48px;padding:0 12px;font-size:15px}
   body{padding-bottom:calc(72px + env(safe-area-inset-bottom,0px))}
 }
+.tour-chip{display:inline-flex;align-self:flex-start;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--brand);background:#E8EDF5;border-radius:999px;padding:4px 10px}
+.tour-frame{position:relative;aspect-ratio:16/10;border-radius:12px;overflow:hidden;background:#0F1E3A}
+.tour-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+@media (max-width:620px){.tour-frame{aspect-ratio:4/5}}
 </style>
 </head>
 <body>
@@ -580,6 +584,11 @@ END REVIEWS SECTION -->
       <p class="fineprint" style="margin-top:14px">Customizations are available within the limitations of each floor plan and manufacturer. Photos and floor plans may show optional features.</p>
     </div>
   </div>
+  <div class="floorplan" id="dlg-3d" hidden>
+    <h3>3D walkthrough</h3>
+    <p class="fineprint" style="margin:0 0 12px">Click and drag to look around, or tap the circles on the floor to walk through the home.</p>
+    <div class="tour-frame" id="dlg-3d-frame"></div>
+  </div>
   <div class="floorplan" id="dlg-floorplan" hidden>
     <h3>Floor plan</h3>
     <div id="dlg-floorplan-body"></div>
@@ -630,6 +639,16 @@ async function loadHomes(){
   if (location.hash.startsWith('#home-')) openHome(hash);
 }
 
+function specLine(h){
+  const parts = [];
+  if (h.size) parts.push(h.size);
+  if (h.beds) parts.push(h.beds + ' bed');
+  if (h.baths) parts.push(h.baths + ' bath');
+  if (h.sqft) parts.push(h.sqft + ' sq ft');
+  return parts.join(', ');
+}
+function isMatterport(u){ return /^https:\/\/my\.matterport\.com\/show\/\?/i.test(u || ''); }
+
 function render(){
   const list = HOMES.filter(h => (state.type==='all' || h.type===state.type) && Number(h.beds || 0) >= state.beds);
   grid.innerHTML = list.length ? list.map(h => {
@@ -644,7 +663,7 @@ function render(){
       <div class="card-body">
         <span class="type-label">${esc(h.type)}</span>
         <h3>${esc(h.model)}</h3>
-        <p>${esc(h.beds)} bed, ${esc(h.baths)} bath${h.sqft ? `, ${esc(h.sqft)} sq ft` : ''}</p>
+        <p>${esc(specLine(h))}</p>${isMatterport(h.tour_url) ? '<span class="tour-chip">3D tour available</span>' : ''}
         <div class="price-row"><strong>${esc(h.price)}</strong><button class="details-btn" data-id="${esc(h.id)}">View details</button></div>
       </div>
     </article>`;}).join('')
@@ -672,14 +691,14 @@ function openHome(id){
   document.getElementById('dlg-price').textContent = h.price || '';
   document.getElementById('dlg-desc').textContent = h.description || '';
   document.getElementById('dlg-specs').innerHTML = [
-    ['Bedrooms', h.beds], ['Bathrooms', h.baths], ['Square feet', h.sqft], ['Status', h.status]
-  ].filter(r => r[1] !== undefined && r[1] !== '').map(r => `<div><dt>${r[0]}</dt><dd>${esc(r[1])}</dd></div>`).join('');
+    ['Size', h.size], ['Bedrooms', h.beds], ['Bathrooms', h.baths], ['Square feet', h.sqft], ['Status', h.status]
+  ].filter(r => r[1] !== undefined && r[1] !== '' && r[1] !== null && r[1] !== 0).map(r => `<div><dt>${r[0]}</dt><dd>${esc(r[1])}</dd></div>`).join('');
   const thumbs = document.getElementById('dlg-thumbs');
   thumbs.innerHTML = photos.length > 1 ? photos.map((p, i) => `<button aria-label="Show photo ${i+1}"><img src="${esc(p)}" alt=""></button>`).join('') : '';
   thumbs.querySelectorAll('button').forEach((b, i) => b.addEventListener('click', () => showPhoto(photos, i, h.model)));
   showPhoto(photos, 0, h.model);
 
-  const fp = safeUrl(h.floorplan) || SAMPLE.floorplan, fpWrap = document.getElementById('dlg-floorplan'), fpBody = document.getElementById('dlg-floorplan-body');
+  const fp = safeUrl(h.floorplan) || (isMatterport(h.tour_url) ? '' : SAMPLE.floorplan), fpWrap = document.getElementById('dlg-floorplan'), fpBody = document.getElementById('dlg-floorplan-body');
   if (fp) {
     fpWrap.hidden = false;
     fpBody.innerHTML = /\.pdf($|\?)/i.test(fp)
@@ -689,13 +708,19 @@ function openHome(id){
 
   const tour = document.getElementById('dlg-tour'), tu = safeUrl(h.tour_url);
   tour.hidden = !tu; if (tu) tour.href = tu;
+  const t3 = document.getElementById('dlg-3d'), t3f = document.getElementById('dlg-3d-frame');
+  if (isMatterport(tu)) {
+    tour.textContent = 'Open 3D tour full screen';
+    t3f.innerHTML = `<iframe src="${esc(tu)}" title="3D walkthrough of ${esc(h.model)}" allow="fullscreen; xr-spatial-tracking" allowfullscreen loading="lazy"></iframe>`;
+    t3.hidden = false;
+  } else { tour.textContent = 'Watch the tour'; t3.hidden = true; t3f.innerHTML = ''; }
 
   history.replaceState(null, '', '#home-' + encodeURIComponent(h.id));
   if (!dlg.open) dlg.showModal();
   dlg.scrollTop = 0;
 }
 function closeHome(){ if (dlg.open) dlg.close(); }
-dlg.addEventListener('close', () => history.replaceState(null, '', '#homes'));
+dlg.addEventListener('close', () => { document.getElementById('dlg-3d-frame').innerHTML = ''; history.replaceState(null, '', '#homes'); });
 document.getElementById('dlg-close').addEventListener('click', closeHome);
 document.getElementById('dlg-ask').addEventListener('click', () => {
   const t = document.getElementById('dlg-title').textContent;
